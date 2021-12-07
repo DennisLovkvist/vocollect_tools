@@ -1,0 +1,1 @@
+.\build\vocollect_network_map.exe aisles_kolonial.txt access_points_kolonial.txt pick_events.txt
