@@ -1,0 +1,1 @@
+ g++ main.cpp -o build/clean_vocollect_log.exe -O3
