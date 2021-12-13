@@ -1,1 +1,0 @@
-g++ -LC:\SFML\lib -IC:\SFML\include main.cpp -o build/vocollect_network_map.exe -lsfml-graphics -lsfml-window -lsfml-system
