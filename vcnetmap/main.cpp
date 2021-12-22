@@ -12,9 +12,9 @@ static const int AISLE_WIDTH_INNER = 32;
 static const int AISLE_WIDTH_OUTER = PP_HEIGHT + PP_HEIGHT + AISLE_WIDTH_INNER;
 static const float PI = 3.141;
 static const int SPACING = (int)(PP_WIDTH*0.2);
-static const sf::Color COLOR_AP_SOLID = sf::Color(200,200,200);
+static const sf::Color COLOR_AP_SOLID = sf::Color(180,180,180);
 static const sf::Color COLOR_AP_TEXT = sf::Color(0,0,0);
-static const sf::Color COLOR_AISLE_SOLID = sf::Color(200,200,200);
+static const sf::Color COLOR_AISLE_SOLID = sf::Color(150,150,150);
 static const sf::Color COLOR_AISLE_TEXT = sf::Color(0,0,0);
 static const sf::Color COLOR_CLEAR = sf::Color(50,50,50);
 
@@ -61,6 +61,7 @@ struct PickEvent
 struct InputState
 {
     bool mouse_right_down;
+    bool mouse_left_down;
     sf::Vector2i mouse_position_delta;
     sf::Vector2i mouse_position_old;
     sf::Vector2i mouse_position;
@@ -102,7 +103,7 @@ void MapPickEvents(std::vector<PickEvent> &pick_events,std::vector<Aisle> &aisle
     }
 }
 
-bool Interact(InputState &input_state, sf::Vector2f mouse_position_coord,std::vector<Aisle> &aisles,std::vector<AccessPoint> &access_points)
+bool Interact(InputState &input_state, sf::Vector2f mouse_position_coord,std::vector<Aisle> &aisles,std::vector<AccessPoint> &access_points, int &move_index)
 {    
     bool refresh = false;
     for (size_t i = 0; i < access_points.size(); i++)
@@ -113,7 +114,11 @@ bool Interact(InputState &input_state, sf::Vector2f mouse_position_coord,std::ve
         bool t0 = access_point->hover;
         if(dist < 16)
         {
-            access_point->hover = true;
+            access_point->hover = true;   
+            if(input_state.mouse_left_down)    
+            {
+                move_index = i;
+            }
         }
         else
         {
@@ -124,6 +129,11 @@ bool Interact(InputState &input_state, sf::Vector2f mouse_position_coord,std::ve
         {
             refresh = true;
         }
+    }
+
+    if(!input_state.mouse_left_down)    
+    {
+        move_index = -1;
     }
 
     return refresh;
@@ -139,12 +149,20 @@ void UpdateInputState(sf::Event &event,sf::Window &window, InputState &input_sta
         {                    
             input_state.mouse_right_down = true;
         }
+        else if (event.mouseButton.button == sf::Mouse::Left)
+        {                    
+            input_state.mouse_left_down = true;
+        }
     }
     else if (event.type == sf::Event::MouseButtonReleased)
     {
         if (event.mouseButton.button == sf::Mouse::Right)
         {                    
             input_state.mouse_right_down = false;
+        }
+        else if (event.mouseButton.button == sf::Mouse::Left)
+        {                    
+            input_state.mouse_left_down = false;
         }
     } 
 
@@ -163,8 +181,199 @@ bool UpdateControls(InputState &input_state, sf::View &view)
 
     return false;
 }
+void DefineAisle(std::vector<Aisle> &aisles, Aisle &aisle,std::string id,int x, int y, int pick_positions)
+{
+    aisle.id = id;
+    aisle.x = x;
+    aisle.y = y;    
+    aisle.pick_positions = pick_positions;
+    aisles.push_back(aisle);
+}
+void DefineAccessPoint(std::vector<AccessPoint> &access_points, AccessPoint &access_point,std::string address,std::string id,int x, int y)
+{
+    access_point.toggle_overlay = access_point.hover = false;
+    access_point.address = address;
+    access_point.id = id;
+    access_point.x = x;
+    access_point.y = y;
+    access_point.r = 12;
+    access_points.push_back(access_point);
+}
+void LoadDefaults(std::vector<Aisle> &aisles, std::vector<AccessPoint> &access_points)
+{
+    Aisle aisle;
+    AccessPoint access_point;
+    DefineAisle(aisles,aisle,"3A",0,225,102);
+    DefineAisle(aisles,aisle,"3B",48,225,102);
+    DefineAisle(aisles,aisle,"3C",96,175,114);
+    DefineAisle(aisles,aisle,"3D",144,175,114);
+    DefineAisle(aisles,aisle,"3E",192,0,156);
+    DefineAisle(aisles,aisle,"3F",240,0,156);
+    DefineAisle(aisles,aisle,"3G",288,0,156);
+    DefineAisle(aisles,aisle,"3H",336,0,156);
+    DefineAisle(aisles,aisle,"3I",384,0,156);
+    DefineAisle(aisles,aisle,"3K",432,0,156);
+    DefineAisle(aisles,aisle,"3L",480,0,156);
+    DefineAisle(aisles,aisle,"3M",528,0,156);
+    DefineAisle(aisles,aisle,"3N",576,0,156);
+    DefineAisle(aisles,aisle,"3O",624,0,156);
+    DefineAisle(aisles,aisle,"3P",672,0,156);
+    DefineAisle(aisles,aisle,"3R",720,0,156);
+    DefineAisle(aisles,aisle,"3S",768,225,102);
+    DefineAisle(aisles,aisle,"3T",816,225,102);
+    DefineAisle(aisles,aisle,"3U",864,0,156);
+    DefineAisle(aisles,aisle,"3V",912,0,156);
+    DefineAisle(aisles,aisle,"3X",960,0,156);
+    DefineAisle(aisles,aisle,"3Y",1008,0,156);
+    DefineAisle(aisles,aisle,"3Z",1056,0,156);
 
-void LoadAisles(sf::Font &font,std::vector<Aisle> &aisles, std::string filename)
+    DefineAisle(aisles,aisle,"5D",192,-800,156);
+    DefineAisle(aisles,aisle,"5E",288,-800,156);
+    DefineAisle(aisles,aisle,"5F",384,-800,156);
+    DefineAisle(aisles,aisle,"5G",480,-800,156);
+    DefineAisle(aisles,aisle,"5H",576,-800,156);
+
+    DefineAisle(aisles,aisle,"H",-48,225,102);
+
+    DefineAisle(aisles,aisle,"4A",-112,380,60);
+    DefineAisle(aisles,aisle,"4A",-112,380,60);
+    DefineAisle(aisles,aisle,"4A",-160,380,60);
+    DefineAisle(aisles,aisle,"4A",-208,380,60);
+    DefineAisle(aisles,aisle,"4A",-256,380,60);
+    DefineAisle(aisles,aisle,"4A",-304,380,60);
+    DefineAisle(aisles,aisle,"4A",-352,380,60);
+    DefineAisle(aisles,aisle,"4A",-400,380,60);
+    DefineAisle(aisles,aisle,"4A",-448,380,60);
+
+    DefineAisle(aisles,aisle,"1V",-512,225,102);
+    DefineAisle(aisles,aisle,"1U",-560,225,102);
+    DefineAisle(aisles,aisle,"1T",-608,225,102);
+    DefineAisle(aisles,aisle,"1S",-656,225,102);
+    DefineAisle(aisles,aisle,"1R",-704,225,102);
+    DefineAisle(aisles,aisle,"1P",-752,225,102);
+    DefineAisle(aisles,aisle,"1O",-800,225,102);
+    DefineAisle(aisles,aisle,"1N",-848,225,102);
+    DefineAisle(aisles,aisle,"1M",-896,225,102);
+    DefineAisle(aisles,aisle,"1L",-944,225,102);
+    DefineAisle(aisles,aisle,"1K",-992,225,102);
+    DefineAisle(aisles,aisle,"1J",-1040,225,102);
+    DefineAisle(aisles,aisle,"1H",-1088,225,102);
+    DefineAisle(aisles,aisle,"1G",-1136,225,102);
+    DefineAisle(aisles,aisle,"1F",-1184,225,102);
+    DefineAisle(aisles,aisle,"1E",-1232,225,102);
+    DefineAisle(aisles,aisle,"1D",-1280,225,102);
+    DefineAisle(aisles,aisle,"1C",-1328,225,102);
+    DefineAisle(aisles,aisle,"1B",-1376,225,102);
+    DefineAisle(aisles,aisle,"1A",-1424,225,102);
+
+    DefineAisle(aisles,aisle,"2T",-560,900,48);
+    DefineAisle(aisles,aisle,"2S",-608,900,48);
+    DefineAisle(aisles,aisle,"2R",-656,900,102);
+    DefineAisle(aisles,aisle,"2P",-704,900,102);
+    DefineAisle(aisles,aisle,"2O",-752,900,102);
+    DefineAisle(aisles,aisle,"2N",-800,900,102);
+    DefineAisle(aisles,aisle,"2M",-848,900,102);
+    DefineAisle(aisles,aisle,"2L",-896,900,102);
+    DefineAisle(aisles,aisle,"2F",-944,900,102);
+    DefineAisle(aisles,aisle,"2E",-992,900,102);
+    DefineAisle(aisles,aisle,"2D",-1040,900,102);
+    DefineAisle(aisles,aisle,"2C",-1088,900,102);
+    DefineAisle(aisles,aisle,"2B",-1136,900,102);
+    DefineAisle(aisles,aisle,"2A",-1184,900,102);
+
+    DefineAccessPoint(access_points, access_point,"39","84:D4:7E:D3:27:F2",12,0);
+    DefineAccessPoint(access_points, access_point,"26","B4:5D:50:14:6B:52",114,49);
+    DefineAccessPoint(access_points, access_point,"40","84:D4:7E:D2:C4:D2",212,-90);
+    DefineAccessPoint(access_points, access_point,"41","84:D4:7E:D3:29:D2",307,-90);
+    DefineAccessPoint(access_points, access_point,"42","84:D4:7E:D3:22:32",403,-88);
+    DefineAccessPoint(access_points, access_point,"43","84:D4:7E:D3:3C:72",497,-90);
+    DefineAccessPoint(access_points, access_point,"44","84:D4:7E:D3:43:D2",595,-90);
+    DefineAccessPoint(access_points, access_point,"45","84:D4:7E:D3:36:F2",690,-90);
+    DefineAccessPoint(access_points, access_point,"46","84:D4:7E:D3:46:92",790,145);
+    DefineAccessPoint(access_points, access_point,"47","84:D4:7E:D2:EE:D2",934,-90);
+    DefineAccessPoint(access_points, access_point,"48","84:D4:7E:D2:F0:D2",1029,-90);
+    DefineAccessPoint(access_points, access_point,"27","70:3A:0E:8E:9A:52",68,680);
+    DefineAccessPoint(access_points, access_point,"28","70:3A:0E:8E:98:52",164,680);
+    DefineAccessPoint(access_points, access_point,"29","70:3A:0E:8E:94:72",261,681);
+    DefineAccessPoint(access_points, access_point,"30","84:D4:7E:D3:2B:D2",357,680);
+    DefineAccessPoint(access_points, access_point,"31","84:D4:7E:D3:29:92",453,679);
+    DefineAccessPoint(access_points, access_point,"32","70:3A:0E:8E:99:F2",548,679);
+    DefineAccessPoint(access_points, access_point,"33","84:D4:7E:D3:46:12",646,680);
+    DefineAccessPoint(access_points, access_point,"34","84:D4:7E:D3:47:32",740,680);
+    DefineAccessPoint(access_points, access_point,"35","84:D4:7E:D3:37:B2",837,679);
+    DefineAccessPoint(access_points, access_point,"37","70:3A:0E:8E:9C:12",885,680);
+    DefineAccessPoint(access_points, access_point,"36","70:3A:0E:8E:9A:92",981,680);
+    DefineAccessPoint(access_points, access_point,"38","70:3A:0E:8E:9A:32",1078,680);
+    DefineAccessPoint(access_points, access_point,"53","34:FC:B9:F5:2C:D2",217,757);
+    DefineAccessPoint(access_points, access_point,"51","84:D4:7E:D3:26:12",474,783);
+    DefineAccessPoint(access_points, access_point,"54","34:FC:B9:F5:2C:72",423,808);
+    DefineAccessPoint(access_points, access_point,"49","84:D4:7E:D3:3B:B2",862,731);
+    DefineAccessPoint(access_points, access_point,"50","84:D4:7E:D3:2E:B2",836,834);
+    DefineAccessPoint(access_points, access_point,"52","34:FC:B9:F5:2D:72",981,783);
+    DefineAccessPoint(access_points, access_point,"200","6C:F3:7F:7D:2E:93",212,-213);
+    DefineAccessPoint(access_points, access_point,"201","6C:F3:7F:7C:B8:13",212,-563);
+    DefineAccessPoint(access_points, access_point,"202","6C:F3:7F:7D:3D:93",308,-739);
+    DefineAccessPoint(access_points, access_point,"203","6C:F3:7F:7C:CF:13",308,-488);
+    DefineAccessPoint(access_points, access_point,"204","6C:F3:7F:7D:2D:33",497,-118);
+    DefineAccessPoint(access_points, access_point,"205","6C:F3:7F:7D:3E:53",404,-214);
+    DefineAccessPoint(access_points, access_point,"206","6C:F3:7F:7D:3C:D3",404,-588);
+    DefineAccessPoint(access_points, access_point,"207","6C:F3:7F:7D:2D:F3",404,-888);
+    DefineAccessPoint(access_points, access_point,"208","6C:F3:7F:7D:2E:73",500,-738);
+    DefineAccessPoint(access_points, access_point,"209","6C:F3:7F:7D:39:53",500,-488);
+    DefineAccessPoint(access_points, access_point,"210","6C:F3:7F:7D:31:93",596,-663);
+    DefineAccessPoint(access_points, access_point,"211","6C:F3:7F:7D:35:73",812,-388);
+    DefineAccessPoint(access_points, access_point,"212","6C:F3:7F:7D:2D:53",812,-218);
+    DefineAccessPoint(access_points, access_point,"213","94:B4:0F:81:E9:53",812,-548);
+    DefineAccessPoint(access_points, access_point,"214","94:B4:0F:91:19:53",307,-119);
+    DefineAccessPoint(access_points, access_point,"55","B4:5D:50:14:A4:D2",-1328,707);
+    DefineAccessPoint(access_points, access_point,"56","B4:5D:50:14:A4:52",-579,1271);
+    DefineAccessPoint(access_points, access_point,"57","B4:5D:50:14:A6:52",-539,1188);
+    DefineAccessPoint(access_points, access_point,"58","B4:5D:50:10:1B:D2",-1164,1337);
+    DefineAccessPoint(access_points, access_point,"59","B4:5D:50:10:1A:F2",-1066,1337);
+    DefineAccessPoint(access_points, access_point,"60","B4:5D:50:10:1C:92",-973,1337);
+    DefineAccessPoint(access_points, access_point,"61","B4:5D:50:10:1A:12",-876,1337);
+    DefineAccessPoint(access_points, access_point,"62","B4:5D:50:10:1F:92",-780,1337);
+    DefineAccessPoint(access_points, access_point,"63","B4:5D:50:10:1C:B2",-1068,763);
+    DefineAccessPoint(access_points, access_point,"64","B4:5D:50:10:1C:F2",-973,763);
+    DefineAccessPoint(access_points, access_point,"65","B4:5D:50:10:1C:72",-880,761);
+    DefineAccessPoint(access_points, access_point,"66","B4:5D:50:10:1B:52",-780,837);
+    DefineAccessPoint(access_points, access_point,"67","B4:5D:50:10:1B:B2",-684,836);
+    DefineAccessPoint(access_points, access_point,"68","34:FC:B9:F5:2C:92",-1161,726);
+    DefineAccessPoint(access_points, access_point,"69","34:FC:B9:F5:2D:52",-527,1312);
+    DefineAccessPoint(access_points, access_point,"1","00:00:00:00:00:00",-192,67);
+    DefineAccessPoint(access_points, access_point,"2","00:00:00:00:00:00",-509,70);
+    DefineAccessPoint(access_points, access_point,"3","00:00:00:00:00:00",-825,72);
+    DefineAccessPoint(access_points, access_point,"4","00:00:00:00:00:00",-1114,65);
+    DefineAccessPoint(access_points, access_point,"5","00:00:00:00:00:00",-1405,670);
+    DefineAccessPoint(access_points, access_point,"6","00:00:00:00:00:00",-1309,673);
+    DefineAccessPoint(access_points, access_point,"7","00:00:00:00:00:00",-1212,671);
+    DefineAccessPoint(access_points, access_point,"8","00:00:00:00:00:00",-1117,673);
+    DefineAccessPoint(access_points, access_point,"9","00:00:00:00:00:00",-1020,670);
+    DefineAccessPoint(access_points, access_point,"10","00:00:00:00:00:00",-925,669);
+    DefineAccessPoint(access_points, access_point,"11","00:00:00:00:00:00",-829,668);
+    DefineAccessPoint(access_points, access_point,"12","00:00:00:00:00:00",-732,672);
+    DefineAccessPoint(access_points, access_point,"13","00:00:00:00:00:00",-637,672);
+    DefineAccessPoint(access_points, access_point,"14","00:00:00:00:00:00",-540,674);
+    DefineAccessPoint(access_points, access_point,"15","00:00:00:00:00:00",-1356,147);
+    DefineAccessPoint(access_points, access_point,"16","00:00:00:00:00:00",-1258,148);
+    DefineAccessPoint(access_points, access_point,"17","00:00:00:00:00:00",-1165,147);
+    DefineAccessPoint(access_points, access_point,"18","00:00:00:00:00:00",-1068,148);
+    DefineAccessPoint(access_points, access_point,"19","00:00:00:00:00:00",-973,148);
+    DefineAccessPoint(access_points, access_point,"20","00:00:00:00:00:00",-877,149);
+    DefineAccessPoint(access_points, access_point,"21","00:00:00:00:00:00",-781,148);
+    DefineAccessPoint(access_points, access_point,"22","00:00:00:00:00:00",-687,150);
+    DefineAccessPoint(access_points, access_point,"23","00:00:00:00:00:00",-589,150);
+    DefineAccessPoint(access_points, access_point,"24","00:00:00:00:00:00",-493,148);
+    DefineAccessPoint(access_points, access_point,"25","00:00:00:00:00:00",-1291,34);
+    DefineAccessPoint(access_points, access_point,"70","00:00:00:00:00:00",-333,275);
+    DefineAccessPoint(access_points, access_point,"71","00:00:00:00:00:00",-140,277);
+    DefineAccessPoint(access_points, access_point,"72","00:00:00:00:00:00",-378,748);
+    DefineAccessPoint(access_points, access_point,"73","00:00:00:00:00:00",-181,752);
+    DefineAccessPoint(access_points, access_point,"74","00:00:00:00:00:00",-373,179);
+    DefineAccessPoint(access_points, access_point,"75","00:00:00:00:00:00",-191,177);
+
+}
+void LoadAisles(std::vector<Aisle> &aisles, std::string filename)
 {
     std::ifstream infile(filename);
     std::string line;
@@ -190,7 +399,7 @@ void LoadAisles(sf::Font &font,std::vector<Aisle> &aisles, std::string filename)
         }
     }
 }
-void LoadAccessPoints(sf::Font &font,std::vector<AccessPoint> &access_points, std::string filename)
+void LoadAccessPoints(std::vector<AccessPoint> &access_points, std::string filename)
 {
     std::ifstream infile(filename);
     std::string line;
@@ -278,15 +487,21 @@ int main(int argc, char *argv[])
     std::string executable_file_path = std::string( result, GetModuleFileName( NULL, result, MAX_PATH ) );   
     std::string executable_path = executable_file_path.substr(0, executable_file_path.find_last_of("\\"));
 
+    bool load_defaults = false;
     if(argc == 4)
+    {        
+        path_pick_event_data = argv[1];
+        path_aisle_data = argv[2];
+        path_access_point_data = argv[3];
+    }
+    else if(argc == 1)
     {
         path_aisle_data = argv[1];
-        path_access_point_data = argv[2];
-        path_pick_event_data = argv[3];
+        load_defaults = true;
     }
     else
     {
-        std::cout << "Expected 3 arguments, only recieved " << argc << "." << std::endl;
+        std::cout << "Expected at least 1 argument." << std::endl;
         std::cout << "      Example: .\\optiscan_network_map.exe aisles.txt access_points.txt pick_events.txt" << std::endl << std::endl << "Press [ENTER] to exit." << std::endl;
         std::cin.ignore();
         return 0;     
@@ -302,16 +517,24 @@ int main(int argc, char *argv[])
     bool next_event = false;
     bool prev_event = false;
     int selected_event = 0;
+    int move_index = -1;
 
     bool render_screen = true;
     sf::ContextSettings settings;   
     settings.antialiasingLevel = 16;
     sf::RenderWindow window(sf::VideoMode(1920, 1080), "Optiscan network map",sf::Style::Default, settings);
     sf::View view = window.getDefaultView();
-    view.zoom(1);
+    view.zoom(2);
     
     InputState input_state;  
-    input_state.mouse_right_down = false;       
+    input_state.mouse_right_down = false;   
+    input_state.mouse_left_down = false; 
+    input_state.mouse_position_delta.x = 0;
+    input_state.mouse_position_delta.y = 0;
+    input_state.mouse_position_old.x = 0;    
+    input_state.mouse_position_old.y = 0;
+    input_state.mouse_position.x = 0;
+    input_state.mouse_position.y = 0;
 
     sf::VertexArray pick_event_ap_connection(sf::Quads, 4);
     #pragma endregion
@@ -331,9 +554,18 @@ int main(int argc, char *argv[])
     std::vector<AccessPoint> *access_points = new std::vector<AccessPoint>();
     std::vector<PickEvent> *pick_events = new std::vector<PickEvent>();
 
-    LoadAisles(font, *aisles,path_aisle_data);   
-    LoadAccessPoints(font, *access_points,path_access_point_data);     
-    LoadPickEvents(*pick_events, path_pick_event_data);      
+    if(!load_defaults)
+    {
+        LoadAisles(*aisles,path_aisle_data);   
+        LoadAccessPoints(*access_points,path_access_point_data);     
+        LoadPickEvents(*pick_events, path_pick_event_data); 
+    }
+    else
+    {
+        LoadDefaults(*aisles,*access_points);
+    }
+
+         
     #pragma endregion 
 
     #pragma region
@@ -397,8 +629,12 @@ int main(int argc, char *argv[])
         aisle->label.setString(aisle->id);
         aisle->label.setCharacterSize(16);
         aisle->label.setFillColor(COLOR_AISLE_TEXT);
-        sf::FloatRect bounds = aisle->label.getLocalBounds();
-        aisle->label.setPosition(aisle->x + (AISLE_WIDTH_INNER/2),aisle->y - AISLE_WIDTH_INNER/2 - bounds.height);
+        sf::FloatRect bounds = aisle->label.getGlobalBounds();
+
+        int n = (AISLE_WIDTH_INNER+(PP_HEIGHT*2));
+        int x = aisle->x + (n/2) - (bounds.width/2)-4;
+        int y = aisle->y - n + (n/2) - (bounds.height);
+        aisle->label.setPosition(x,y);
         
     }    
     #pragma endregion
@@ -407,15 +643,16 @@ int main(int argc, char *argv[])
     /*Sets up everything to visually represent the Access Points.  
     Every circle is composed of 16 triangles. All triangles are stored in the same VertexArray to minimize draw calls.
     */ 
-    sf::VertexArray circles = sf::VertexArray(sf::Triangles,access_points->size()*(16*3));
+    int edges = 24;
+    sf::VertexArray circles = sf::VertexArray(sf::Triangles,access_points->size()*(edges*3));
     index = 0;
-    float R = (PI*2)/16;
+    float R = (PI*2)/edges;
     for (size_t i = 0; i < access_points->size(); i++)
     {
         AccessPoint *ap = &(*access_points)[i];
 
         float r = 0;
-        for (size_t j = 0; j < 16; j++)
+        for (size_t j = 0; j < edges; j++)
         {
             circles[index].position.x = ap->x;
             circles[index].position.y = ap->y;
@@ -440,6 +677,7 @@ int main(int argc, char *argv[])
 
     }
     #pragma endregion
+
 
     #pragma region
     Overlay overlay;
@@ -468,7 +706,7 @@ int main(int argc, char *argv[])
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
-            {
+            {                
                 window.close();
             }
 
@@ -480,13 +718,12 @@ int main(int argc, char *argv[])
             }
 
         }
-
-             accumulator += clock.getElapsedTime().asSeconds();
+        
+        accumulator += clock.getElapsedTime().asSeconds();
 
 		clock.restart();
         while (accumulator >= dt)
 		{	
-
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && !prev_event)
             {
                 if(selected_event < pick_events->size() && selected_event >= 0)
@@ -498,12 +735,10 @@ int main(int argc, char *argv[])
                     render_screen = true;
                 }
             }
-            else
+            if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             {
                 prev_event = false;               
             }
-
-
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && !next_event)
             {
                 if(selected_event < pick_events->size() && selected_event >= 0)
@@ -513,24 +748,73 @@ int main(int argc, char *argv[])
                     selected_event = (selected_event +1 >= pick_events->size()) ? 0:selected_event +1; 
                     ShowPickEvent(&(*pick_events)[selected_event], true);
                     render_screen = true;
-                }             
-
+                }     
             }
-            else
+            if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
             {
                 next_event = false;               
-            }               
+            }  
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::T))
+            { std::cout << std::endl<< std::endl<< std::endl<< std::endl<< std::endl;
+                for (size_t i = 0; i < access_points->size(); i++)
+                {
+                    AccessPoint *ap = &(*access_points)[i];
+                    std::cout << ap->id << ";" << ap->address << ";" << ap->x << ";" << ap->y << std::endl;
+                }
+            }
 
+            sf::Vector2f mp_v = window.mapPixelToCoords(input_state.mouse_position,view);      
+/*
+            if(move_index >= 0 && move_index < access_points->size())
+            {
+                AccessPoint *ap = &(*access_points)[move_index];
+                ap->x = mp_v.x;
+                ap->y = mp_v.y;
+
+                index = 0;
+                float R = (PI*2)/16;
+                for (size_t i = 0; i < access_points->size(); i++)
+                {
+                    AccessPoint *ap = &(*access_points)[i];
+
+                    float r = 0;
+                    for (size_t j = 0; j < 16; j++)
+                    {
+                        circles[index].position.x = ap->x;
+                        circles[index].position.y = ap->y;
+                        circles[index].color = COLOR_AP_SOLID;
+                        index ++;
+                        circles[index].position.x = ap->x + std::cos(r) * ap->r;
+                        circles[index].position.y = ap->y + std::sin(r) * ap->r;            
+                        circles[index].color = COLOR_AP_SOLID;
+                        index ++;
+                        r+=R;
+                        circles[index].position.x = ap->x + std::cos(r) * ap->r;
+                        circles[index].position.y = ap->y + std::sin(r) * ap->r;            
+                        circles[index].color = COLOR_AP_SOLID;
+                        index ++;
+                    }
+                    ap->label.setFont(font);
+                    ap->label.setString(ap->id);
+                    ap->label.setCharacterSize(12);
+                    ap->label.setFillColor(COLOR_AP_TEXT);
+                    sf::FloatRect bounds = ap->label.getLocalBounds();
+                    ap->label.setPosition(ap->x - (bounds.width/2),ap->y - (bounds.height*2)/2);
+
+                }
+                render_screen = true;
+            }      
+            */
             
-            sf::Vector2f mp_v = window.mapPixelToCoords(input_state.mouse_position,view);
+           
 
-            if(Interact(input_state,mp_v,*aisles, *access_points))
+            if(Interact(input_state,mp_v,*aisles, *access_points, move_index))
             {
                 render_screen = true;
             }
             accumulator -= dt;
-		
         }
+    
 
         if (!render_screen)
         {
@@ -586,8 +870,8 @@ int main(int argc, char *argv[])
                             delta = (delta == 0) ? 1:delta;
 
                             float f = (float)(1.0-(delta / 10000.0));
-                            float cos_n_4 = std::cos(normal) * 4;
-                            float sin_n_4 = std::sin(normal) * 4;
+                            float cos_n_4 = std::cos(normal) * 2;
+                            float sin_n_4 = std::sin(normal) * 2;
 
                             pick_event_ap_connection[0].position.x = position.x + cos_n_4;
                             pick_event_ap_connection[0].position.y = position.y + sin_n_4;
@@ -622,7 +906,7 @@ int main(int argc, char *argv[])
 
                     sf::FloatRect bounds = overlay.access_point_overlay_label.getLocalBounds();
                     sf::Vector2f size = sf::Vector2f(bounds.width*1.1,bounds.height*2);                
-                    sf::Vector2f position = sf::Vector2f(access_point.x+28,access_point.y-28);
+                    sf::Vector2f position = sf::Vector2f(access_point.x+12,access_point.y-28);
 
                     overlay.access_point_overlay_background.setSize(size);
                     overlay.access_point_overlay_background.setPosition(position);                

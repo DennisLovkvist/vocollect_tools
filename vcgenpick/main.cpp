@@ -27,8 +27,22 @@ int main(int argc, char *argv[])
         std::string line;
         std::stringstream str(std::stringstream::out|std::stringstream::binary);
 
+        std::regex keyword_filename = std::regex("^(.+?)(.txt)$");
+        std::vector<std::string> files;
+        std::string file_path = "C:/temp";
+
         for (size_t i = 1; i < argc; i++)
-        {   
+        {
+                
+                file_path = (std::string)argv[i];  
+                std::smatch m;
+                if(regex_search(file_path,m, keyword_filename))
+                {
+                        files.push_back(file_path);
+                } 
+        }
+        for (size_t i = 0; i < files.size(); i++)
+        {     
                 std::ifstream infile(argv[i]);            
 
                 std::string last_mac_address = "00:00:00:00:00:00";
@@ -105,10 +119,10 @@ int main(int argc, char *argv[])
                                 }
                                 if(queue_pick_event)
                                 {
-                                        for (size_t i = 0; i < queue.size(); i++)
+                                        for (size_t j = 0; j < queue.size(); j++)
                                         {
-                                                queue[i] += ";" + last_mac_address + ";" + last_signal_strength + ";" + last_timestamp;
-                                                str << queue[i] << std::endl;
+                                                queue[j] += ";" + last_mac_address + ";" + last_signal_strength + ";" + last_timestamp;
+                                                str << queue[j] << std::endl;
                                         }
                                         queue.clear();
                                         queue_pick_event = false;                                                                                

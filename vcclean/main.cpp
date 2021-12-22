@@ -13,10 +13,23 @@ int main(int argc, char *argv[])
             std::cin.ignore();
             return 0;
     }
+    std::regex keyword_filename = std::regex("^(.+?)(.txt)$");
+    std::smatch m;
+    std::vector<std::string> files;
+    std::string file_path;
 
     for (size_t i = 1; i < argc; i++)
-    {   
-        std::ifstream infile(argv[i]);
+    {
+        file_path = (std::string)argv[i];  
+
+        if(regex_search(file_path,m, keyword_filename))
+        {
+            files.push_back(file_path);
+        } 
+    }
+    for (size_t i = 0; i < files.size(); i++)
+    { 
+        std::ifstream infile(files[i]);
         std::string line;
 
         std::regex keywords_cleanup[4] = {std::regex(": \\^\\^"),std::regex(": ##"),std::regex(": SURVEY"),std::regex("prTaskLUTPicked")};
@@ -28,14 +41,14 @@ int main(int argc, char *argv[])
         while (std::getline(infile, line))
         {
             std::smatch m;
-            for (size_t i = 0; i < 4; i++)
+            for (size_t j = 0; j < 4; j++)
             {
-                if(regex_search(line,m, keywords_cleanup[i]))
+                if(regex_search(line,m, keywords_cleanup[j]))
                 {
                     bool flag_filter = true;
-                    for (size_t j = 0; j < 2; j++)
+                    for (size_t k = 0; k < 2; k++)
                     {
-                        if(regex_search(line,m, filter_out_commands[j]))
+                        if(regex_search(line,m, filter_out_commands[k]))
                         {
                             flag_filter = false;
                             break;
@@ -43,12 +56,12 @@ int main(int argc, char *argv[])
                     }    
                     if(flag_filter)
                     {
-                        if(regex_search(line,m, keywords_cleanup[i]))
+                        if(regex_search(line,m, keywords_cleanup[j]))
                         {
                             bool flag = false;
-                            for (size_t j = 0; j < 4; j++)
+                            for (size_t k = 0; k < 4; k++)
                             {
-                                std::string delimiter = delimiters[j];                        
+                                std::string delimiter = delimiters[k];                        
                                 size_t found = line.find(delimiter);
                                 if(found != 4294967295)
                                 {   
@@ -69,7 +82,7 @@ int main(int argc, char *argv[])
             }
         }               
 
-        std::string input_file = argv[i];
+        std::string input_file = files[i];
 
         int start = 0;
         int end = input_file.find("/");
