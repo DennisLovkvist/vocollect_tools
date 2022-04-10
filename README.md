@@ -29,7 +29,25 @@ $ ./vcnetmap/build.ps1
 $ ./install.sh
 ```
 ### Usage
-```
 
+Open terminal and change directory to vocollect log file.
+```
+$ vcclean "log.txt"
+$ vcgenpick "log_parsed.txt"
+$ vcnetstat "pickresults.txt"
 ```
 ![Alt text](screenshot_0.png?raw=true "Screenshot")
+
+Run vcnetmap with external aisle and access point definitions
+```
+$ vcnetmap "pickresults.txt" "aisle_data.txt" "access_point_data.txt"
+```
+
+Run vcnetmap with default aisle and access point definitions
+```
+$ vcnetmap "pickresults.txt"
+```
+![Alt text](screenshot_1.png?raw=true "Screenshot")
+
+
+
