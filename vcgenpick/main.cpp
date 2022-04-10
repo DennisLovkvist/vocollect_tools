@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         }
         for (size_t i = 0; i < files.size(); i++)
         {     
-                std::ifstream infile(argv[i]);            
+                std::ifstream infile(files[i]);            
 
                 std::string last_mac_address = "00:00:00:00:00:00";
                 std::string last_signal_strength = "0%";
@@ -141,20 +141,21 @@ int main(int argc, char *argv[])
                         queue_pick_event = false;                                                                                
                 }      
 
-                std::string input_file = argv[i];
+                std::string input_file = files[i];
 
                 int start = 0;
-                int end = input_file.find("/");
+                int end = input_file.find("\\");
                 while (end != std::string::npos)
                 {
                         start = end + 1;
-                        end = input_file.find("/", start);
+                        end = input_file.find("\\", start);
                 }
 
-                std::string filename = input_file.substr(start, end - start);
-                std::string filename_no_extension = filename.substr(0, filename.find("."));
+                std::string filename = input_file.substr(start, input_file.length()-start);
 
-                std::time_t t = std::time(0);                
+                std::string filename_no_extension = filename.substr(0,filename.find("."));                
+
+                std::time_t t = std::time(0);    
 
                 std::ofstream file;
                 file.open("pick_moments_from_" + filename_no_extension + "_" + std::to_string(t) + ".txt", std::ofstream::binary);
