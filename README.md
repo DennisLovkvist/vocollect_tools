@@ -26,7 +26,7 @@ $ ./vcgenpick/build.ps1
 $ ./vcnetstat/build.ps1
 $ ./vcnetmap/build.ps1
 
-$ ./install.sh
+$ ./install.ps1
 ```
 ### Usage
 
