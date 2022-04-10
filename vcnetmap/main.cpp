@@ -494,9 +494,9 @@ int main(int argc, char *argv[])
         path_aisle_data = argv[2];
         path_access_point_data = argv[3];
     }
-    else if(argc == 1)
+    else if(argc == 2)
     {
-        path_aisle_data = argv[1];
+        path_pick_event_data = argv[1];
         load_defaults = true;
     }
     else
@@ -563,6 +563,7 @@ int main(int argc, char *argv[])
     else
     {
         LoadDefaults(*aisles,*access_points);
+        LoadPickEvents(*pick_events, path_pick_event_data); 
     }
 
          
@@ -881,6 +882,8 @@ int main(int argc, char *argv[])
                             pick_event_ap_connection[2].position.y = ap->y - sin_n_4;
                             pick_event_ap_connection[3].position.x = position.x - cos_n_4;
                             pick_event_ap_connection[3].position.y = position.y - sin_n_4;
+
+                            std::cout << pick_event_ap_connection[0].position.x << "," << pick_event_ap_connection[0].position.y <<std::endl;
                         
                             sf::Color color(166, 180, 1);                        
                             pick_event_ap_connection[0].color = pick_event_ap_connection[1].color = pick_event_ap_connection[2].color = pick_event_ap_connection[3].color = color;
